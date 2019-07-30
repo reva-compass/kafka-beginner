@@ -1,4 +1,4 @@
-package com.github.rkandoji.kafka;
+package com.github.rkandoji.kafka.producers;
 
 import java.util.Properties;
 

@@ -1,4 +1,4 @@
-package com.github.rkandoji.kafka;
+package com.github.rkandoji.kafka.consumers;
 
 import com.google.gson.*;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -9,19 +9,18 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.UUID;
-
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Properties;
+import java.util.UUID;
 
-public class MskJsonConsumer {
+public class MskAvroConsumer {
 
     public static void main(String[] args) {
         System.out.println("Hello there!");
 
         Gson GSON = new GsonBuilder().create();
-        Logger LOG = LoggerFactory.getLogger(MskJsonConsumer.class);
+        Logger LOG = LoggerFactory.getLogger(MskAvroConsumer.class);
         String bootstrapServer = "b-1.listings-pipeline-beta.jlg1k0.c1.kafka.us-east-1.amazonaws.com:9092," +
                 "b-2.listings-pipeline-beta.jlg1k0.c1.kafka.us-east-1.amazonaws.com:9092," +
                 "b-3.listings-pipeline-beta.jlg1k0.c1.kafka.us-east-1.amazonaws.com:9092," +
@@ -29,7 +28,8 @@ public class MskJsonConsumer {
                 "b-5.listings-pipeline-beta.jlg1k0.c1.kafka.us-east-1.amazonaws.com:9092," +
                 "b-6.listings-pipeline-beta.jlg1k0.c1.kafka.us-east-1.amazonaws.com:9092 ";
         String groupId = UUID.randomUUID().toString();
-        String topic = "data_listings_json_listings_joined_aspen_mls_rets_av_1";
+        //     String topic = "data_listings_json_listings_joined_aspen_mls_rets_av_1";
+        String topic = "data_listings_avro_listings_joined_aspen_mls_rets_av_1";
 
         // create consumer configs
         Properties props = new Properties();
@@ -52,16 +52,15 @@ public class MskJsonConsumer {
                 LOG.info("Key:" + record.key() + " Value:" + record.value());
                 LOG.info("Partition:" + record.partition() + " Offset:" + record.offset());
 
-                JsonParser parser = new JsonParser();
-                JsonObject jo = parser.parse(record.value()).getAsJsonObject();
-                System.out.println("## jo " + jo);
-                System.out.println("# " + jo.get("data_version").getAsInt());
-                String payload = jo.get("payload").getAsString();
-                System.out.println("# payload:" + payload);
-                JsonObject payloadObject = parser.parse(payload).getAsJsonObject();
-                System.out.println("## payloadObject " + payloadObject);
-                if (payloadObject.has("ActiveAgent:Agent")) {
-                    System.out.println("## ActiveAgent:Agent " + payloadObject.get("ActiveAgent:Agent").getAsJsonArray());
+                String val = record.value().toString().replace("\\", "");
+                System.out.println("### val " + val);
+
+                try {
+                    JsonObject jo = new JsonParser().parse(val).getAsJsonObject();
+                    System.out.println("## jo " + jo);
+                    System.out.println("# " + jo.get("data_version").getAsInt());
+                } catch (JsonSyntaxException e) {
+                    LOG.error("Error occurred: " + e.getMessage());
                 }
             }
 

@@ -1,4 +1,4 @@
-package com.github.rkandoji.kafka;
+package com.github.rkandoji.kafka.producers;
 
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
