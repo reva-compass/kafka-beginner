@@ -1,4 +1,4 @@
-package com.github.rkandoji.kafka;
+package com.github.rkandoji.kafka.consumers;
 
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
