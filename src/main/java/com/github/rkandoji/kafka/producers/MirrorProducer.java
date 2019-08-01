@@ -19,7 +19,7 @@ import java.util.Arrays;
 import java.util.Properties;
 import java.util.UUID;
 
-public class AgentProducer {
+public class MirrorProducer {
 
     public static void main(String[] args) {
         System.out.println("Hello there!");
