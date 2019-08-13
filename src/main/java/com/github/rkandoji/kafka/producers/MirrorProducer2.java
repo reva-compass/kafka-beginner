@@ -14,7 +14,6 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
-import org.apache.kafka.connect.json.JsonSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,7 +22,9 @@ import java.util.Arrays;
 import java.util.Properties;
 import java.util.UUID;
 
-public class MirrorProducer {
+// send data as "payload" with some metadata on top level
+
+public class MirrorProducer2 {
 
     public static void main(String[] args) {
         System.out.println("Hello there!");
@@ -57,6 +58,8 @@ public class MirrorProducer {
         producerProps.setProperty(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
         KafkaProducer<String, String> producer = new KafkaProducer<>(producerProps);
 
+        String propertyTopic = "poc_aspen_property";
+
         // poll for data
         while (true) {
             ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
@@ -66,6 +69,7 @@ public class MirrorProducer {
                 try {
                     JsonParser parser = new JsonParser();
                     JsonObject jo = parser.parse(record.value()).getAsJsonObject();
+                    System.out.println("### jo " + jo);
                     String payload = jo.get("payload").getAsString();
                     JsonObject payloadObject = parser.parse(payload).getAsJsonObject();
 
@@ -75,13 +79,13 @@ public class MirrorProducer {
                         JsonArray agentsInfo = payloadObject.get("ActiveAgent:Agent").getAsJsonArray();
                         for (JsonElement agent : agentsInfo) {
                             // create a producer record and send
-                            String agentId = agent.getAsJsonObject().get("Agent ID").getAsString();
+                            String aId = agent.getAsJsonObject().get("Agent ID").getAsString();
                             System.out.println("##v agent.getAsJsonObject().toString()) " + agent.getAsJsonObject().toString());
                             JsonObject ja = new JsonObject();
-                            ja.addProperty("agent_id", agentId);
+                            ja.addProperty("agent_id", aId);
                             ja.addProperty("payload", agent.getAsJsonObject().toString());
                             System.out.println("### ja " + ja);
-                            ProducerRecord<String, String> producerRecord = new ProducerRecord<>(agentTopic, agentId, ja.toString());
+                            ProducerRecord<String, String> producerRecord = new ProducerRecord<>(agentTopic, aId, ja.toString());
                             producer.send(producerRecord);
                         }
                     }
@@ -111,6 +115,12 @@ public class MirrorProducer {
 //
 //                    }
 
+                    // create property root
+                    JsonObject rootObject = createRootJson(parser, payload);
+
+                    ProducerRecord<String, String> producerRecord = new ProducerRecord<>(propertyTopic, rootObject.get("internal_listing_id").getAsString(), rootObject.toString());
+                    producer.send(producerRecord);
+
                     // flush and close (since send is async, you must do it see data...otherwise applciation will close before send is executed
                     producer.flush();
                     //  producer.close();
@@ -122,5 +132,47 @@ public class MirrorProducer {
 
         }
 
+    }
+
+    private static JsonObject createRootJson(JsonParser parser, String payload) {
+
+        JsonObject jo = parser.parse(payload).getAsJsonObject();
+        JsonObject out = new JsonObject();
+
+        // add root level items
+        if (jo.has("Internal Listing ID")) {
+            String internalListingId = jo.get("Internal Listing ID").getAsString();
+            out.addProperty("internal_listing_id", internalListingId);
+        }
+        if (jo.has("Agent ID")) {
+            String agentId = jo.get("Agent ID").getAsString();
+            out.addProperty("agent_id", agentId);
+        }
+        if (jo.has("CoList Agent ID")) {
+            String coAgentId = jo.get("CoList Agent ID").getAsString();
+            out.addProperty("colist_agent_id", coAgentId);
+        }
+        if (jo.has("Selling Agent ID")) {
+            String sellingAgentId = jo.get("Selling Agent ID").getAsString();
+            out.addProperty("selling_agent_id", sellingAgentId);
+        }
+        if (jo.has("CoSelling Agent ID")) {
+            String coSellingAgentId = jo.get("CoSelling Agent ID").getAsString();
+            out.addProperty("coselling_agent_id", coSellingAgentId);
+        }
+
+        // remove joined items
+        if (jo.has("ActiveAgent:Agent")) {
+            jo.remove("ActiveAgent:Agent");
+        }
+        if (jo.has("OpenHouse:OpenHouse")) {
+            jo.remove("OpenHouse:OpenHouse");
+        }
+        if (jo.has("Office:Office")) {
+            jo.remove("Office:Office");
+        }
+
+        out.addProperty("payload", jo.toString());
+        return out;
     }
 }
