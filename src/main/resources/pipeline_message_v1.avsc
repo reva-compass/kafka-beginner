@@ -1,0 +1,14 @@
+{
+    "name": "pipeline_message_v1",
+    "type": "record",
+    "namespace": "com.github.rkandoji.kafka.pipeline.avro",
+    "fields": [
+        {"name": "trace_id", "type": "string"},
+        {"name": "ts_created_at", "type": "string"},
+        {"name": "source", "type": "string"},
+        {"name": "metadata", "type": {"type": "map", "values": ["null", "string"]}},
+        {"name": "payload_type", "type": "string"},
+        {"name": "payload_schema_id", "type": "int"},
+        {"name": "payload", "type": "bytes"}
+  ]
+}
