@@ -4,6 +4,7 @@ import com.github.rkandoji.kafka.consumers.MskJsonConsumer;
 import com.github.rkandoji.kafka.utils.AvroUtils;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -15,6 +16,7 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Properties;
@@ -58,8 +60,13 @@ public class SeattleAgentConsumer {
                     LOG.info("Partition:" + record.partition() + " Offset:" + record.offset());
                     GenericRecord message = AvroUtils.deSerializeMessageee(record.value());
                     System.out.println("### message " + message);
-                }
-
+                    ByteBuffer bb = (ByteBuffer) message.get("payload");
+                    if(bb.hasArray()) {
+                        String converted = new String(bb.array(), "UTF-8");
+                        System.out.println("### converted " + converted);
+                        JsonObject jo = parser.parse(converted).getAsJsonObject();
+                        System.out.println("### jo " + jo.get("FirstName"));
+                    }}
             }
 
         } catch (Exception e) {
