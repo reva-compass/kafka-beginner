@@ -1,0 +1,11 @@
+{
+    "name": "kafka_envelope",
+    "type": "record",
+    "namespace": "com.github.rkandoji.kafka.pipeline.avro",
+    "fields": [
+        {"name": "schema_id", "type": "int"},
+        {"name": "schema_type", "type": "string"},
+        {"name": "schema_name", "type": "string"},
+        {"name": "message", "type": "bytes"}
+    ]
+}
