@@ -9,21 +9,19 @@ import org.apache.avro.io.DecoderFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 public class AvroUtils {
-//
-//    public static void deSerialize(byte[] data) throws IOException {
-//
-//        // out.toByteArray() = data
-//        File schemaFile = new File("/Users/rkandoji/Documents/GitProjects/kafka-beginner/src/main/resources/kafka_envelope.avsc");
-//        Schema schema = new Schema.Parser().parse(schemaFile);
-//        GenericRecord datum = new GenericData.Record(schema);
-//
-//        DatumReader<GenericRecord> reader = new GenericDatumReader<GenericRecord>(schema);
-//        BinaryDecoder decoder = DecoderFactory.get().binaryDecoder(data, null);
-//        GenericRecord result = reader.read(null, decoder);
-//        System.out.println("### result " + result);
-//    }
+
+    public static GenericRecord deSerializeMessageee(byte[] data) throws IOException {
+        GenericRecord envelope = deSerializeEnvelope(data);
+        ByteBuffer bb = (ByteBuffer) envelope.get("message");
+        GenericRecord message = null;
+        if (bb.hasArray()) {
+            message = AvroUtils.deSerializePipelineMessage(bb.array());
+        }
+        return message;
+    }
 
     public static GenericRecord deSerializeEnvelope(byte[] data) throws IOException {
         File schemaFile = new File("/Users/rkandoji/Documents/GitProjects/kafka-beginner/src/main/resources/kafka_envelope.avsc");
@@ -41,10 +39,6 @@ public class AvroUtils {
         DatumReader<GenericRecord> reader = new GenericDatumReader<GenericRecord>(schema);
         BinaryDecoder decoder = DecoderFactory.get().binaryDecoder(data, null);
         GenericRecord result = reader.read(null, decoder);
-//        System.out.println("### result " + result);
-//        System.out.println("### schema_id " +  result.get("schema_id"));
-//        System.out.println("### schema_name " +  result.get("schema_name"));
-//        System.out.println("### message " +  result.get("message"));
         return result;
     }
 

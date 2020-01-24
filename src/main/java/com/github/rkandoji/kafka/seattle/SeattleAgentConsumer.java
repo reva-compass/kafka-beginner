@@ -20,7 +20,7 @@ import java.util.Arrays;
 import java.util.Properties;
 import java.util.UUID;
 
-public class SeattleAgentManager {
+public class SeattleAgentConsumer {
     public static void main(String[] args) {
         System.out.println("Hello there!");
 
@@ -56,24 +56,8 @@ public class SeattleAgentManager {
                 for (ConsumerRecord<String, byte[]> record : records) {
                     LOG.info("Key:" + record.key() + " Value:" + record.value());
                     LOG.info("Partition:" + record.partition() + " Offset:" + record.offset());
-                    GenericRecord envelope = AvroUtils.deSerializeEnvelope(record.value());
-                    System.out.println("### envelope message " + envelope.get("message"));
-//                    GenericRecord message = AvroUtils.deSerializePipelineMessage((byte[]) envelope.get("message"));
-//                    System.out.println("### message " + message);
-//                    String jsonStr = record.value();
-//                    JsonObject inputObj = parser.parse(jsonStr).getAsJsonObject();
-//                    JsonObject dataObj = parser.parse(inputObj.get("data").getAsString()).getAsJsonObject();
-//                    String listingId = dataObj.get("ListingKeyNumeric").getAsString();
-//
-//                    if (dataObj.has("ListAgentKeyNumeric"))
-//                        inputObj.addProperty("ListAgentKeyNumeric", dataObj.get("ListAgentKeyNumeric").getAsString());
-//                    if (dataObj.has("BuyerAgentKeyNumeric"))
-//                        inputObj.addProperty("BuyerAgentKeyNumeric", dataObj.get("BuyerAgentKeyNumeric").getAsString());
-//                    if (dataObj.has("CoListAgentKeyNumeric"))
-//                        inputObj.addProperty("CoListAgentKeyNumeric", dataObj.get("CoListAgentKeyNumeric").getAsString());
-//                    if (dataObj.has("CoBuyerAgentKeyNumeric"))
-//                        inputObj.addProperty("CoBuyerAgentKeyNumeric", dataObj.get("CoBuyerAgentKeyNumeric").getAsString());
-
+                    GenericRecord message = AvroUtils.deSerializeMessageee(record.value());
+                    System.out.println("### message " + message);
                 }
 
             }
